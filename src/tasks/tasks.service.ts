@@ -20,6 +20,15 @@ export class TasksService {
     return 'task deleted!';
   }
 
+  updateTaskStatus(args: { id: string; status: TaskStatus }): Task {
+    const { id, status } = args;
+
+    const task = this.getTaskById(id);
+    task.status = status;
+
+    return task;
+  }
+
   createTask({ title, description }: CreateTaskDto): Task {
     const task: Task = {
       id: uuid(),
