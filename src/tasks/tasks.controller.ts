@@ -7,11 +7,15 @@ import {
   Delete,
   Patch,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task, TaskStatus } from './task.model';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
+
+const isEmptyObject = (param: any): boolean => Object.keys(param).length === 0;
 
 @Controller('tasks')
 export class TasksController {
@@ -35,6 +39,7 @@ export class TasksController {
   }
 
   @Post()
+  @UsePipes(ValidationPipe)
   createTask(@Body() createTaskDto: CreateTaskDto): Task {
     return this.tasksService.createTask(createTaskDto);
   }
@@ -47,5 +52,3 @@ export class TasksController {
     return this.tasksService.updateTaskStatus({ id, status });
   }
 }
-
-const isEmptyObject = (param: any): boolean => Object.keys(param).length === 0;
