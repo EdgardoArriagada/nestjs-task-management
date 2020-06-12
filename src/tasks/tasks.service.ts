@@ -6,6 +6,7 @@ import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
 import { TaskStatus } from './task-status.enum';
 import { User } from 'src/auth/user.entity';
+import isNonemptyArray from 'src/helpers/isNonemptyArray/isNonemptyArray';
 
 @Injectable()
 export class TasksService {
@@ -14,8 +15,12 @@ export class TasksService {
     private taskRepository: TaskRepository,
   ) {}
 
-  async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
-    return this.taskRepository.getTasks(filterDto);
+  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
+    const tasks = await this.taskRepository.getTasks(filterDto, user);
+
+    if (!isNonemptyArray(tasks)) throw new NotFoundException("User doesn't register tasks");
+
+    return tasks;
   }
 
   async getTaskById(id: number): Promise<Task> {
