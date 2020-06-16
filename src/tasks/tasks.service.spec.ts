@@ -12,6 +12,7 @@ const mockTaskRepository = () => ({
   getTasks: jest.fn(),
   findOne: jest.fn(),
   createTask: jest.fn(),
+  delete: jest.fn(),
 });
 
 describe('TaskService', () => {
@@ -101,6 +102,39 @@ describe('TaskService', () => {
       taskRepository.createTask.mockResolvedValue(resolvedValue);
 
       await expect(tasksService.createTask(mockTask, mockUser)).resolves.toEqual(resolvedValue);
+    });
+  });
+
+  describe('deleteTask method', () => {
+    describe('on successfully deletion', () => {
+      beforeEach(() => {
+        taskRepository.delete.mockResolvedValue({ affected: 1 });
+      });
+
+      it('returns a message', async () => {
+        expect.assertions(1);
+
+        const result = await tasksService.deleteTask(1, mockUser);
+
+        expect(result).toHaveProperty('message');
+      });
+
+      it('call taskRepository.delete with proper args', async () => {
+        expect.assertions(2);
+
+        expect(taskRepository.delete).not.toHaveBeenCalled();
+        await tasksService.deleteTask(1, mockUser);
+
+        expect(taskRepository.delete).toHaveBeenCalledWith({ id: 1, userId: mockUser.id });
+      });
+    });
+
+    describe('on unsuccessfully deletion', () => {
+      it('throws an error when task can not be found', async () => {
+        expect.assertions(1);
+
+        await expect(tasksService.deleteTask(1, mockUser)).rejects.toThrow(NotFoundException);
+      });
     });
   });
 });
