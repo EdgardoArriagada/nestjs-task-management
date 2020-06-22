@@ -3,6 +3,7 @@ import { UserRepository } from './user.repository';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from './user.entity';
 import { UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 
 const mockCredentialsDto: AuthCredentialsDto = { username: 'TestUsername', password: 'TestPassword' };
 
@@ -80,6 +81,20 @@ describe('UserRepository', () => {
       await expect(userRepository.validateUserPassword(mockCredentialsDto)).rejects.toThrow(
         UnauthorizedException,
       );
+    });
+  });
+
+  describe('hashPassword method', () => {
+    it('calls bcrypt.hash to generate hash', async () => {
+      expect.assertions(3);
+      bcrypt.hash = jest.fn().mockResolvedValue('testHash');
+
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+
+      const result = await userRepository.hashPassword('testPassword', 'testSalt');
+
+      expect(bcrypt.hash).toHaveBeenCalledWith('testPassword', 'testSalt');
+      expect(result).toEqual('testHash');
     });
   });
 });
