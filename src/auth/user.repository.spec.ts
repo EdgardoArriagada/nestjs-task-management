@@ -84,6 +84,21 @@ describe('UserRepository', () => {
     });
   });
 
+  describe('genSalt method', () => {
+    it('generate salt', async () => {
+      expect.assertions(3);
+      bcrypt.genSalt = jest.fn().mockResolvedValue('Test Value');
+
+      expect(bcrypt.genSalt).not.toHaveBeenCalled();
+
+      const result = await userRepository.genSalt();
+
+      expect(bcrypt.genSalt).toHaveBeenCalled();
+
+      expect(result).toEqual('Test Value');
+    });
+  });
+
   describe('hashPassword method', () => {
     it('calls bcrypt.hash to generate hash', async () => {
       expect.assertions(3);
