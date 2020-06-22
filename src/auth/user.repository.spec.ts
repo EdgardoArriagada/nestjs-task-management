@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { UserRepository } from './user.repository';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from './user.entity';
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
 const mockCredentialsDto: AuthCredentialsDto = { username: 'TestUsername', password: 'TestPassword' };
@@ -110,6 +110,26 @@ describe('UserRepository', () => {
 
       expect(bcrypt.hash).toHaveBeenCalledWith('testPassword', 'testSalt');
       expect(result).toEqual('testHash');
+    });
+  });
+
+  describe('saveUser method', () => {
+    it('successfully save user', async () => {
+      expect.assertions(2);
+      const user = { save: jest.fn() };
+      expect(user.save).not.toHaveBeenCalled();
+      await userRepository.saveUser(user);
+      expect(user.save).toHaveBeenCalled();
+    });
+    it('throws conflict exception on duplicate error ', async () => {
+      expect.assertions(1);
+      const user = { save: jest.fn().mockRejectedValue({ code: '23505' }) };
+      await expect(userRepository.saveUser(user)).rejects.toThrow(ConflictException);
+    });
+    it('throws internal server error if something else goes wrong ', async () => {
+      expect.assertions(1);
+      const user = { save: jest.fn().mockRejectedValue({}) };
+      await expect(userRepository.saveUser(user)).rejects.toThrow(InternalServerErrorException);
     });
   });
 });
