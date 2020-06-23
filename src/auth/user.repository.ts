@@ -7,12 +7,12 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  async singUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { username, password } = authCredentialsDto;
 
-    const user = new User();
+    const user = this.create();
     user.username = username;
-    user.salt = await bcrypt.genSalt();
+    user.salt = await this.genSalt();
     user.password = await this.hashPassword(password, user.salt);
 
     await this.saveUser(user);
@@ -26,6 +26,8 @@ export class UserRepository extends Repository<User> {
 
     throw new UnauthorizedException('Invalid credentials');
   }
+
+  private genSalt = async (): Promise<string> => await bcrypt.genSalt();
 
   private async hashPassword(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
